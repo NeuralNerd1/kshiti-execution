@@ -1,7 +1,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 1: Build the Go execution worker
 # ─────────────────────────────────────────────────────────────────────────────
-FROM golang:1.21-bookworm AS go-builder
+FROM golang:1.25-bookworm AS go-builder
 
 WORKDIR /build
 
