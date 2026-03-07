@@ -55,13 +55,14 @@ export async function apiRequest<T>(
             clearAccessToken();
         }
 
-        const error: ApiError = {
-            message:
-                (data && data.error) ||
-                (data && data.detail) ||
-                "Request failed",
+        const message =
+            (data && data.error) ||
+            (data && data.detail) ||
+            `Request failed with status ${response.status}`;
+
+        const error = Object.assign(new Error(message), {
             status: response.status,
-        };
+        });
         throw error;
     }
 

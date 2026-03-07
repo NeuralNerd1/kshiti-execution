@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { getLocalProjects, createLocalProject, LocalProject } from "@/services/projectService";
 
-function LocalProjectsContent() {
+export default function LocalProjectsPage() {
     const { loading, authenticated, user, logout } = useAuth();
     const router = useRouter();
 
@@ -169,17 +169,5 @@ function LocalProjectsContent() {
                 </div>
             </main>
         </div>
-    );
-}
-
-export default function LocalProjectsPage() {
-    return (
-        <Suspense fallback={
-            <div className="loading-screen">
-                <div className="spinner-primary" style={{ width: 32, height: 32 }} />
-            </div>
-        }>
-            <LocalProjectsContent />
-        </Suspense>
     );
 }

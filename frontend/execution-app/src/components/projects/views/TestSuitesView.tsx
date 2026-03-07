@@ -75,8 +75,8 @@ export default function TestSuitesView() {
           setSelectedSuite(loadedSuites[0]);
         }
       } catch (err: any) {
-        console.error("Failed to load project snapshot:", err);
-        const msg = err.message || "Failed to load test suites.";
+        const msg = err?.message || String(err) || "Failed to load test suites.";
+        console.error("Failed to load project snapshot:", msg, err);
         setError(msg);
         toast.error(msg);
       } finally {

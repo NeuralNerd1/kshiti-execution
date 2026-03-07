@@ -23,10 +23,9 @@ import (
 func main() {
 	log.Println("Starting Execution Worker...")
 	
-	// Load environment variables from admin-service
-	err := godotenv.Load("../admin-service/.env")
-	if err != nil {
-		log.Printf("Warning: failed to load .env from ../admin-service: %v", err)
+	// Load .env from current directory (non-fatal; on Render env vars are injected directly)
+	if err := godotenv.Load(); err != nil {
+		log.Printf("No .env file found, reading from environment variables directly")
 	}
 
 	dbURL := os.Getenv("DATABASE_URL")

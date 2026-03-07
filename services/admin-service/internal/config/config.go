@@ -43,7 +43,7 @@ func Load() *Config {
 		SMTPUser:     getEnv("SMTP_USER", ""),
 		SMTPPass:     getEnv("SMTP_PASS", ""),
 		SMTPFrom:     getEnv("SMTP_FROM", "noreply@kshiti.io"),
-		ServerPort:   getEnv("PORT", getEnv("SERVER_PORT", "8081")),
+		ServerPort:   getEnv("PORT", "8081"),
 		AdminSecret:  getEnv("ADMIN_SECRET", ""),
 		CORSOrigins:  strings.Split(getEnv("CORS_ORIGINS", "http://localhost:3001"), ","),
 		SupabaseURL:  getEnv("SUPABASE_URL", ""),

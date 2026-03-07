@@ -2,6 +2,6 @@
 
 import TestLoadExecuteView from "./TestLoadExecuteView";
 
-export default function LoadExecuteView() {
+export default function LoadExecuteView({ params }: { params: any }) {
   return <TestLoadExecuteView />;
 }
