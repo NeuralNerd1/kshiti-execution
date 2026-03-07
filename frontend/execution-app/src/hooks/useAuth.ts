@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { getSession } from "@/services/authService";
 import { getAccessToken, setAccessToken, clearAccessToken } from "@/services/apiClient";
 import type { AuthUser } from "@/types/auth";
@@ -14,7 +14,6 @@ type AuthState = {
 
 export function useAuth() {
     const router = useRouter();
-    const searchParams = useSearchParams();
     const [authState, setAuthState] = useState<AuthState>({
         loading: true,
         authenticated: false,
@@ -23,7 +22,12 @@ export function useAuth() {
 
     const checkAuth = useCallback(async () => {
         // 1. Check for token passed via URL (from planning app redirect)
-        const urlToken = searchParams.get("token");
+        let urlToken = null;
+        if (typeof window !== "undefined") {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlToken = urlParams.get("token");
+        }
+
         if (urlToken) {
             setAccessToken(urlToken);
             // Clean URL
@@ -59,7 +63,7 @@ export function useAuth() {
             setAuthState({ loading: false, authenticated: false, user: null });
             router.replace("/login");
         }
-    }, [searchParams, router]);
+    }, [router]);
 
     useEffect(() => {
         checkAuth();

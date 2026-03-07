@@ -2,6 +2,6 @@
 
 import ExecutionConfigsView from "./ExecutionConfigsView";
 
-export default function AddonsView({ params }: { params: any }) {
+export default function AddonsView() {
   return <ExecutionConfigsView />;
 }
