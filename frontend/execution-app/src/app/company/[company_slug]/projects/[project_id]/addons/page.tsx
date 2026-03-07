@@ -1,5 +1,5 @@
-import AddonsView from "@/components/projects/views/AddonsView";
+import ExecutionConfigsView from "@/components/projects/views/ExecutionConfigsView";
 
-export default function Page({ params }: { params: any }) {
-  return <AddonsView params={params} />;
+export default function Page() {
+  return <ExecutionConfigsView />;
 }
