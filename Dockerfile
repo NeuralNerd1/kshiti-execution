@@ -1,5 +1,5 @@
 # --- Build Stage ---
-FROM golang:1.25-bullseye AS builder
+FROM golang:1.23-bullseye AS builder
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ WORKDIR /app/services/execution-worker
 RUN go build -o worker cmd/worker/main.go
 
 # --- Final Stage ---
-FROM mcr.microsoft.com/playwright:v1.50.0-focal
+FROM mcr.microsoft.com/playwright:v1.50-jammy
 
 # Set up work directory
 WORKDIR /app
