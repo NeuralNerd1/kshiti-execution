@@ -1,5 +1,5 @@
 import ExecutionConfigsView from "@/components/projects/views/ExecutionConfigsView";
 
-export default function Page({ params }: { params: any }) {
+export default function Page() {
     return <ExecutionConfigsView />;
 }
