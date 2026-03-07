@@ -1,0 +1,33 @@
+{
+    "suite": {
+        "id": 1,
+        "name": "Local Smoke Test Suite",
+        "testCases": [
+            {
+                "id": "tc1",
+                "name": "Example Domain Navigation",
+                "steps": [
+                    {
+                        "action_key": "goto_url",
+                        "parameters": {
+                            "url": "https://example.com"
+                        }
+                    },
+                    {
+                        "action_key": "assert_text_equals",
+                        "parameters": {
+                            "selector_type": "css",
+                            "selector_value": "h1",
+                            "expected_text": "Example Domain"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "config": {
+        "browserType": "chromium",
+        "headless": true,
+        "logNetworkLogs": true
+    }
+}

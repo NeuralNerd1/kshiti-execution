@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Project Migration Viewer</title>
+
+    <style>
+        body {
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0f172a;
+            color: #e5e7eb;
+            padding: 24px;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin-bottom: 12px;
+        }
+
+        .toolbar {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #020617;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar label {
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button {
+            background: #38bdf8;
+            color: #020617;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button.secondary {
+            background: #22c55e;
+        }
+
+        button.tertiary {
+            background: #f59e0b;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 20px;
+            margin: 4px 0;
+        }
+
+        li {
+            margin: 4px 0;
+        }
+
+        label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        input[type="checkbox"] {
+            accent-color: #38bdf8;
+            cursor: pointer;
+        }
+
+        .folder>label {
+            font-weight: 600;
+        }
+
+        .file {
+            margin-left: 18px;
+            opacity: 0.95;
+        }
+
+        .tree-container {
+            background: #020617;
+            padding: 16px;
+            border-radius: 10px;
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+
+        .divider {
+            height: 1px;
+            background: #1e293b;
+            margin: 8px 0;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>📦 Project Migration Tool</h1>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <label>
+            <input type="checkbox" id="select-all">
+            Select all files & folders
+        </label>
+
+        <button id="zip-btn">
+            Export selected → ZIP
+        </button>
+
+        <button id="word-btn" class="secondary">
+            Export selected → Word
+        </button>
+
+        <div class="divider"></div>
+
+        <button id="full-word-btn" class="tertiary">
+            Export FULL project → Word
+        </button>
+    </div>
+
+    <!-- Tree -->
+    <div class="tree-container">
+        {{ TREE_HTML | safe }}
+    </div>
+
+    <!-- JS Logic -->
+    <script>
+        const selectAll = document.getElementById("select-all");
+
+        // 🔹 Select all toggle
+        selectAll.addEventListener("change", (e) => {
+            const checked = e.target.checked;
+            document
+                .querySelectorAll("input[type='checkbox']")
+                .forEach(cb => cb.checked = checked);
+        });
+
+        // 🔹 Folder → children
+        document.querySelectorAll(".folder-checkbox").forEach(folderCheckbox => {
+            folderCheckbox.addEventListener("change", (e) => {
+                const li = e.target.closest("li");
+                const checked = e.target.checked;
+
+                li.querySelectorAll("input[type='checkbox']")
+                    .forEach(cb => cb.checked = checked);
+            });
+        });
+
+        // 🔹 Child → parent (indeterminate)
+        document.querySelectorAll(".file-checkbox").forEach(fileCheckbox => {
+            fileCheckbox.addEventListener("change", updateParents);
+        });
+
+        function updateParents() {
+            document.querySelectorAll(".folder").forEach(folder => {
+                const children = folder.querySelectorAll("ul input[type='checkbox']");
+                const folderCheckbox = folder.querySelector(".folder-checkbox");
+
+                if (!children.length) return;
+
+                const allChecked = Array.from(children).every(cb => cb.checked);
+                const noneChecked = Array.from(children).every(cb => !cb.checked);
+
+                folderCheckbox.checked = allChecked;
+                folderCheckbox.indeterminate = !allChecked && !noneChecked;
+            });
+        }
+
+        function getSelectedFiles() {
+            return Array.from(
+                document.querySelectorAll(".file-checkbox:checked")
+            ).map(cb => cb.dataset.path);
+        }
+
+        function downloadBlob(blob, filename) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // 🔹 ZIP export (selected)
+        document.getElementById("zip-btn").addEventListener("click", async () => {
+            const files = getSelectedFiles();
+            if (!files.length) return alert("No files selected");
+
+            const res = await fetch("/migrate/export/zip", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ files })
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                return alert(err.error || "ZIP export failed");
+            }
+
+            downloadBlob(await res.blob(), "project_migration.zip");
+        });
+
+        // 🔹 Word export (selected)
+        document.getElementById("word-btn").addEventListener("click", async () => {
+            const files = getSelectedFiles();
+            if (!files.length) return alert("No files selected");
+
+            const res = await fetch("/migrate/export/word", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ files })
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                return alert(err.error || "Word export failed");
+            }
+
+            downloadBlob(await res.blob(), "project_migration.docx");
+        });
+
+        // 🔹 FULL PROJECT Word export (no selection needed)
+        document.getElementById("full-word-btn").addEventListener("click", () => {
+            window.location.href = "/migrate/export/word/full";
+        });
+    </script>
+</body>
+
+</html>
