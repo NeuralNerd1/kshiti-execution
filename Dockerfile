@@ -11,7 +11,7 @@ WORKDIR /app/services/execution-worker
 RUN go build -o worker cmd/worker/main.go
 
 # --- Final Stage ---
-FROM mcr.microsoft.com/playwright:v1.50-jammy
+FROM mcr.microsoft.com/playwright:v1.58.2-jammy
 
 # Set up work directory
 WORKDIR /app
