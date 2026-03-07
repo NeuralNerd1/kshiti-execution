@@ -1,0 +1,28 @@
+# --- Build Stage ---
+FROM golang:1.25-bullseye AS builder
+
+WORKDIR /app
+
+# Copy the entire monorepo context
+COPY . .
+
+# Build the admin-service
+WORKDIR /app/services/admin-service
+RUN go build -o admin cmd/server/main.go
+
+# --- Final Stage ---
+FROM debian:bullseye-slim
+
+WORKDIR /app
+
+# Install CA certificates for TLS/HTTPS
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+
+# Copy the Go binary from the builder stage
+COPY --from=builder /app/services/admin-service/admin /app/admin
+
+# Expose the port (Render will override with PORT env var)
+EXPOSE 8080
+
+# Run the server
+CMD ["/app/admin"]
