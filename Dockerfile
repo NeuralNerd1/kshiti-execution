@@ -5,18 +5,17 @@ FROM golang:1.21-bookworm AS go-builder
 
 WORKDIR /build
 
-# Copy Go workspace files
-COPY services/execution-worker/go.mod services/execution-worker/go.sum ./services/execution-worker/
-COPY services/admin-service/go.mod services/admin-service/go.sum ./services/admin-service/
+# Copy BOTH service sources first — required because execution-worker go.mod
+# has: replace github.com/kshiti/exec-admin-service => ../admin-service
+# go mod download needs the admin-service source on disk to resolve this.
+COPY services/execution-worker/ ./services/execution-worker/
+COPY services/admin-service/ ./services/admin-service/
 
-# Download dependencies
+# Now download deps and build (admin-service source is present for replace directive)
 WORKDIR /build/services/execution-worker
 RUN go mod download
-
-# Copy source and build
-COPY services/execution-worker/ ./
-COPY services/admin-service/ ../admin-service/
 RUN go build -o /worker ./cmd/worker/main.go
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 2: Runtime — Node.js 20 + Playwright + Go binary
