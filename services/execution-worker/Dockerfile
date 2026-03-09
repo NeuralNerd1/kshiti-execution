@@ -16,7 +16,7 @@ COPY services/execution-worker/ /build/services/execution-worker/
 RUN CGO_ENABLED=0 GOOS=linux go build -o /build/worker ./cmd/worker
 
 # ── Stage 2: Runtime with Node.js + Playwright ──
-FROM mcr.microsoft.com/playwright:v1.50.0-noble
+FROM node:22-bookworm
 
 WORKDIR /app
 
@@ -27,8 +27,11 @@ COPY --from=go-builder /build/worker ./worker
 COPY services/playwright-engine/ ./playwright-engine/
 WORKDIR /app/playwright-engine
 RUN npm ci --production
+# Install Playwright Chromium + system dependencies (always matches npm version)
+RUN npx playwright install --with-deps chromium
 WORKDIR /app
 
 ENV PLAYWRIGHT_ENGINE_PATH=/app/playwright-engine/execute.js
 
 CMD ["./worker"]
+
