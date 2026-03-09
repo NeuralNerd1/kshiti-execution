@@ -45,6 +45,24 @@ func main() {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
+	// Start a dummy HTTP server for Render health checks.
+	// Render may kill the container after 60 seconds if it doesn't bind to a port,
+	// depending on how the service type is configured.
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	go func() {
+		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"status":"ok"}`))
+		})
+		log.Printf("Starting dummy health server on port %s...", port)
+		if err := http.ListenAndServe(":"+port, nil); err != nil {
+			log.Printf("Health server error: %v", err)
+		}
+	}()
+
 	log.Println("Worker is ready and polling for PENDING runs...")
 
 	ticker := time.NewTicker(2 * time.Second)
