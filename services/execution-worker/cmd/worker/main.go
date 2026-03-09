@@ -23,9 +23,10 @@ import (
 func main() {
 	log.Println("Starting Execution Worker...")
 	
-	// Load .env from current directory (non-fatal; on Render env vars are injected directly)
-	if err := godotenv.Load(); err != nil {
-		log.Printf("No .env file found, reading from environment variables directly")
+	// Load environment variables from admin-service
+	err := godotenv.Load("../admin-service/.env")
+	if err != nil {
+		log.Printf("Warning: failed to load .env from ../admin-service: %v", err)
 	}
 
 	dbURL := os.Getenv("DATABASE_URL")
@@ -129,10 +130,13 @@ func pollAndExecute(ctx context.Context, pool *pgxpool.Pool, dbURL string) {
 	}
 	defer os.Remove(payloadPath)
 
-	cwd, _ := os.Getwd()
-	enginePath := filepath.Join(cwd, "..", "playwright-engine", "execute.js")
-	if _, err := os.Stat(enginePath); os.IsNotExist(err) {
-		enginePath = filepath.Join(cwd, "..", "..", "playwright-engine", "execute.js")
+	enginePath := os.Getenv("PLAYWRIGHT_ENGINE_PATH")
+	if enginePath == "" {
+		cwd, _ := os.Getwd()
+		enginePath = filepath.Join(cwd, "..", "playwright-engine", "execute.js")
+		if _, err := os.Stat(enginePath); os.IsNotExist(err) {
+			enginePath = filepath.Join(cwd, "..", "..", "playwright-engine", "execute.js")
+		}
 	}
 
 	log.Printf("Spawning Playwright Engine for run %s...", runID)
